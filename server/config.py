@@ -26,6 +26,6 @@ CLASS_NAMES = {
 # aiohttp config
 
 AIOHTTP = {
-    "host": "0.0.0.0",
+    "host": "127.0.0.1",
     "port": 8500,
 }

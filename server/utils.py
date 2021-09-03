@@ -117,17 +117,16 @@ def optional(**fields: t.Type):
                 )
 
             for name, datatype in fields.items():
-                if name in data:
-                    if not isinstance(data[name], datatype):
-                        raise web.HTTPBadRequest(
-                            reason=f"Field {name} must be of type {datatype}",
-                            text=json.dumps({
-                                "success": False,
-                                "msg":
-                                f"Field {name} must be of type {datatype}",
-                                "error_code": "wrong_field_type",
-                            }),
-                        )
+                if name in data and if not isinstance(data[name], datatype):
+                    raise web.HTTPBadRequest(
+                        reason=f"Field {name} must be of type {datatype}",
+                        text=json.dumps({
+                            "success": False,
+                            "msg":
+                            f"Field {name} must be of type {datatype}",
+                            "error_code": "wrong_field_type",
+                        }),
+                    )
             return await handler(request)
 
         for key, value in handler.__dict__.items():
