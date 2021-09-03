@@ -117,7 +117,7 @@ def optional(**fields: t.Type):
                 )
 
             for name, datatype in fields.items():
-                if name in data and if not isinstance(data[name], datatype):
+                if name in data and not isinstance(data[name], datatype):
                     raise web.HTTPBadRequest(
                         reason=f"Field {name} must be of type {datatype}",
                         text=json.dumps({
