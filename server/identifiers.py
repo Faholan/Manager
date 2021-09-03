@@ -34,7 +34,7 @@ async def get(request: web.Request) -> web.Response:
                         "SELECT * FROM identifiers WHERE id=$1 AND context=$2 AND username=$3",
                         session["id"],
                         data["context"],
-                        data["username"]
+                        data["username"],
                     )
                 else:
                     rows = await database.fetch(
@@ -46,7 +46,7 @@ async def get(request: web.Request) -> web.Response:
                 rows = await database.fetch(
                     "SELECT * FROM identifiers WHERE id=$1 AND username=$3",
                     session["id"],
-                    data["username"]
+                    data["username"],
                 )
             else:
                 rows = await database.fetch(
@@ -59,18 +59,20 @@ async def get(request: web.Request) -> web.Response:
                 session["id"],
             )
     return web.json_response({
-        "success": True,
-        "result": [
-            {
-                "context": row["context"],
-                "username": row["username"],
-                "password": AES.new(
-                    session["password"],
-                    AES.MODE_EAX,
-                    nonce=row["nonce"],
-                ).decrypt(row["password"])
-            } for row in rows
-        ],
+        "success":
+        True,
+        "result": [{
+            "context":
+            row["context"],
+            "username":
+            row["username"],
+            "password":
+            AES.new(
+                session["password"],
+                AES.MODE_EAX,
+                nonce=row["nonce"],
+            ).decrypt(row["password"]),
+        } for row in rows],
     })
 
 
@@ -104,8 +106,7 @@ async def insert(request: web.Request) -> web.Response:
                         "success": False,
                         "msg": "Record already exists",
                         "error_code": "record_exists",
-                    },
-                )
+                    }, ),
             )
         await database.execute(
             "INSERT INTO identifiers VALUES ($1, 2, $3, $4, $5)",
@@ -117,7 +118,7 @@ async def insert(request: web.Request) -> web.Response:
                 AES.MODE_EAX,
                 nonce=nonce,
             ).encrypt(data["password"]),
-            nonce
+            nonce,
         )
     return web.json_response({"success": True})
 
@@ -152,8 +153,7 @@ async def update(request: web.Request) -> web.Response:
                         "success": False,
                         "msg": "Record does not exist",
                         "error_code": "unknown_record",
-                    },
-                )
+                    }, ),
             )
         await database.execute(
             "UPDATE identifiers SET password=$1, nonce=$2 WHERE "
@@ -198,7 +198,7 @@ async def upsert(request: web.Request) -> web.Response:
                 AES.MODE_EAX,
                 nonce=nonce,
             ).encrypt(data["password"]),
-            nonce
+            nonce,
         )
     return web.json_response({"success": True})
 

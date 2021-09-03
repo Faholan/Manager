@@ -8,7 +8,7 @@ from hashlib import pbkdf2_hmac, sha256
 from os import urandom
 
 from aiohttp import web
-from aiohttp_session import new_session, get_session
+from aiohttp_session import get_session, new_session
 from Crypto.Cipher import AES
 
 from . import config
@@ -29,9 +29,7 @@ async def login(request: web.Request) -> web.Response:
     session["remote"] = request.remote
     async with request.app["asyncpg.pool"].acquire() as database:
         row = await database.fetchrow(
-            "SELECT * FROM sessions WHERE username=$1",
-            data["username"]
-        )
+            "SELECT * FROM sessions WHERE username=$1", data["username"])
 
     if not row:
         raise web.HTTPForbidden(
@@ -40,28 +38,21 @@ async def login(request: web.Request) -> web.Response:
                 {
                     "success": False,
                     "msg": f"User {data['username']} does not exist",
-                    "error_code": "unknown_user"
-                },
-            )
+                    "error_code": "unknown_user",
+                }, ),
         )
 
     pass_bytes = bytes(request["password"], "utf8")
 
-    if pbkdf2_hmac(
-        "sha256",
-        pass_bytes,
-        row["salt"],
-        config.HASH_ITERATIONS
-    ) != row["password"]:
+    if (pbkdf2_hmac("sha256", pass_bytes, row["salt"], config.HASH_ITERATIONS)
+            != row["password"]):
         raise web.HTTPForbidden(
             reason="Wrong password",
-            text=json.dumps(
-                {
-                    "success": False,
-                    "msg": "Wrong password",
-                    "error_code": "wrong_password",
-                }
-            )
+            text=json.dumps({
+                "success": False,
+                "msg": "Wrong password",
+                "error_code": "wrong_password",
+            }),
         )
     session["id"] = row["id"]
     session["admin"] = row["admin"]
@@ -89,17 +80,13 @@ async def password(request: web.Request) -> web.Response:
             "UPDATE sessions SET password=$2 AND salt=$3 WHERE id=$1",
             session["id"],
             salt,
-            pbkdf2_hmac(
-                "sha256",
-                bytes(data["password"], "utf8"),
-                salt,
-                config.HASH_ITERATIONS
-            )
+            pbkdf2_hmac("sha256", bytes(data["password"], "utf8"), salt,
+                        config.HASH_ITERATIONS),
         )
         new_pass = sha256(bytes(data["password"], "utf8")).digest()
         for row in await database.fetch(
-            "SELECT * FROM identifiers WHERE id=$1",
-            session["id"],
+                "SELECT * FROM identifiers WHERE id=$1",
+                session["id"],
         ):
             await database.execute(
                 "UPDATE identifiers SET password=$1 WHERE id=$2 AND context=$3 AND username=$4",
@@ -107,14 +94,15 @@ async def password(request: web.Request) -> web.Response:
                     new_pass,
                     AES.MODE_EAX,
                     nonce=row["nonce"],
-                ).encrypt(AES.new(
-                    session["password"],
-                    AES.MODE_EAX,
-                    nonce=row["nonce"],
-                ).decrypt(row["password"])),
+                ).encrypt(
+                    AES.new(
+                        session["password"],
+                        AES.MODE_EAX,
+                        nonce=row["nonce"],
+                    ).decrypt(row["password"])),
                 row["id"],
                 row["context"],
-                row["username"]
+                row["username"],
             )
         session["password"] = new_pass
     return web.json_response({"success": True})
@@ -139,20 +127,16 @@ async def create(request: web.Request) -> web.Response:
     if not session["admin"]:
         raise web.HTTPForbidden(
             reason="Admin required",
-            text=json.dumps(
-                {
-                    "success": False,
-                    "msg": "Admin required",
-                    "error_code": "admin_required",
-                }
-            )
+            text=json.dumps({
+                "success": False,
+                "msg": "Admin required",
+                "error_code": "admin_required",
+            }),
         )
     salt = urandom(config.SALT_LENGTH)
     async with request.app["asynpg.pool"].acquire() as database:
         row = await database.fetchrow(
-            "SELECT * FROM sessions WHERE username=$1",
-            data["username"]
-        )
+            "SELECT * FROM sessions WHERE username=$1", data["username"])
         if row:
             raise web.HTTPBadRequest(
                 reason=f"User {data['username']} exists",
@@ -161,8 +145,7 @@ async def create(request: web.Request) -> web.Response:
                         "success": False,
                         "msg": f"User {data['username']} exists",
                         "error_code": "user_exists",
-                    },
-                )
+                    }, ),
             )
         await database.execute(
             "INSERT INTO sessions (username, password, salt, admin) VALUES "
@@ -175,6 +158,6 @@ async def create(request: web.Request) -> web.Response:
                 config.HASH_ITERATIONS,
             ),
             salt,
-            data.get("admin", False)
+            data.get("admin", False),
         )
     return web.json_response({"success": True})
