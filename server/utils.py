@@ -13,7 +13,10 @@ from aiohttp_session import get_session
 from . import config
 
 
-def get_subroutes(path: str, app: web.Application):
+Handler = t.Callable[[web.Request], t.Awaitable[web.StreamResponse]]
+
+
+def get_subroutes(path: str, app: web.Application) -> t.List[t.Dict[str, t.Any]]:
     """Get the subroutes, their associated method, and a description."""
     return [{
         "path": route.get_info()["path"],
@@ -26,7 +29,7 @@ def get_subroutes(path: str, app: web.Application):
         if route.get_info()["path"].startswith(path)]
 
 
-def get_description(handler) -> t.Optional[str]:
+def get_description(handler: Handler) -> t.Optional[str]:
     """Get a handler's description."""
     doc = getdoc(handler)
     if doc:
@@ -34,7 +37,7 @@ def get_description(handler) -> t.Optional[str]:
     return getattr(handler, "description", doc)
 
 
-def get_optional(handler) -> t.Dict[str, str]:
+def get_optional(handler: Handler) -> t.Dict[str, str]:
     """Get a handler's optional arguments."""
     return {
         name: config.CLASS_NAMES.get(cls, cls.__name__)
@@ -42,7 +45,7 @@ def get_optional(handler) -> t.Dict[str, str]:
     }
 
 
-def get_required(handler) -> t.Dict[str, str]:
+def get_required(handler: Handler) -> t.Dict[str, str]:
     """Get a handler's required arguments."""
     return {
         name: config.CLASS_NAMES.get(cls, cls.__name__)
@@ -54,7 +57,7 @@ def required(**fields: t.Type):
     """Require json data with specific field types."""
     def callback(handler):
         """Handle the function conversion."""
-        async def check_and_run(request):
+        async def check_and_run(request: web.Request) -> web.Response:
             try:
                 data = await request.json()
             except json.JSONDecodeError:
@@ -101,7 +104,7 @@ def optional(**fields: t.Type):
     """Check for type of optional fields."""
     def callback(handler):
         """Handle the function conversion."""
-        async def check_and_run(request):
+        async def check_and_run(request: web.Request) -> web.Response:
             if await request.text() == "":
                 return await handler(request)
             try:
@@ -139,7 +142,7 @@ def optional(**fields: t.Type):
 
 def authenticated(handler):
     """Require authentication to perform the action."""
-    async def check_and_run(request):
+    async def check_and_run(request: web.Request) -> web.Response:
         """Check the authentication and defer to handler."""
         session = await get_session(request)
 

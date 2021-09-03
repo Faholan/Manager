@@ -8,7 +8,7 @@ from os import urandom
 
 from aiohttp import web
 from aiohttp_session import get_session
-from Crypto.Cipher import AES
+from Cryptodome.Cipher import AES
 
 from . import config
 from .utils import authenticated, optional, required

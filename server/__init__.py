@@ -9,11 +9,12 @@ from typing import Literal, NamedTuple
 
 
 class VersionInfo(NamedTuple):
+    """Get information about the version."""
+
     major: int
     minor: int
     micro: int
     releaselevel: Literal["alpha", "beta", "candidate", "final"]
-    serial: int
 
 
 version_info = VersionInfo(major=0, minor=0, micro=0, releaselevel="alpha")
