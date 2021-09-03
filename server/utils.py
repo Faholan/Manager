@@ -41,7 +41,7 @@ def get_optional(handler: Handler) -> t.Dict[str, str]:
     """Get a handler's optional arguments."""
     return {
         name: config.CLASS_NAMES.get(cls, cls.__name__)
-        for name, cls in getattr(handler, "optional", {})
+        for name, cls in getattr(handler, "optional", {}).items()
     }
 
 
@@ -49,7 +49,7 @@ def get_required(handler: Handler) -> t.Dict[str, str]:
     """Get a handler's required arguments."""
     return {
         name: config.CLASS_NAMES.get(cls, cls.__name__)
-        for name, cls in getattr(handler, "required", {})
+        for name, cls in getattr(handler, "required", {}).items()
     }
 
 
