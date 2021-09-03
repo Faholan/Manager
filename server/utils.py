@@ -12,11 +12,11 @@ from aiohttp_session import get_session
 
 from . import config
 
-
 Handler = t.Callable[[web.Request], t.Awaitable[web.StreamResponse]]
 
 
-def get_subroutes(path: str, app: web.Application) -> t.List[t.Dict[str, t.Any]]:
+def get_subroutes(path: str,
+                  app: web.Application) -> t.List[t.Dict[str, t.Any]]:
     """Get the subroutes, their associated method, and a description."""
     return [{
         "path": route.get_info()["path"],
