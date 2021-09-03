@@ -5,7 +5,7 @@ __license__ = "AGPL"
 __copyright__ = "Copyright 2021 Faholan"
 __version__ = "0.0.0a"
 
-from typing import NamedTuple, Literal
+from typing import Literal, NamedTuple
 
 
 class VersionInfo(NamedTuple):
