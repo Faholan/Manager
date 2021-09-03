@@ -122,8 +122,7 @@ def optional(**fields: t.Type):
                         reason=f"Field {name} must be of type {datatype}",
                         text=json.dumps({
                             "success": False,
-                            "msg":
-                            f"Field {name} must be of type {datatype}",
+                            "msg": f"Field {name} must be of type {datatype}",
                             "error_code": "wrong_field_type",
                         }),
                     )
